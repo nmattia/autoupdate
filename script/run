@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# vim: filetype=sh
+
+set -euo pipefail
+
+mkdir -p ~/.tmp
+
+export TMPDIR=~/.tmp
+
+update_package() {
+    dir=$(mktemp -d)
+
+    cd $dir
+
+    git clone "https://github.com/nmattia/$1"
+
+    cd $1
+
+    git checkout -b autoupdate
+
+    ./script/update 2>&1 > /dev/null
+
+    if [[ `git status --porcelain` ]]; then
+        git config user.email "nicolas@nmattia.com"
+        git config user.name "Nicolas Mattia"
+
+        git commit --author="Nicolas Mattia <nicolas@nmattia.com>" -am "Update dependencies"
+
+        git remote set-url origin "https://${GITHUB_TOKEN}@github.com/nmattia/$1.git" 2>&1 >/dev/null
+
+        git push -fu origin autoupdate 2>&1 >/dev/null
+
+        hub pull-request -m "Update dependencies" -r nmattia 2>&1 >/dev/null
+    else
+        echo "No updated for $1"
+    fi
+}
+
+did_fail=0
+
+update_package stutter || did_fail=1
+update_package makefile || did_fail=1
+update_package snack || did_fail=1
+update_package snipcheck || did_fail=1
+
+exit $did_fail
