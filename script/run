@@ -18,7 +18,7 @@ update_package() {
 
     git checkout -b autoupdate
 
-    ./script/update 2>&1 > /dev/null
+    ./script/update 2>&1 > /dev/null || return 1
 
     if [[ `git status --porcelain` ]]; then
         git config user.email "nicolas@nmattia.com"
