@@ -61,6 +61,5 @@ update_package snack || did_fail=1
 update_package snipcheck || did_fail=1
 update_package nmattia.com || did_fail=1
 update_package resume || did_fail=1
-update_package niv || did_fail=1
 
 exit $did_fail
