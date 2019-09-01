@@ -20,14 +20,9 @@ jobs:
       - checkout
 
       - run:
-          name: Install dependencies
-          command: |
-              nix-env -f ./nix -iA gitAndTools.hub
-
-      - run:
           name: Update repositories
           command: |
-              ./script/run
+              nix-shell ./nix -p gitAndTools.hub --command ./script/run
 
 workflows:
   version: 2
