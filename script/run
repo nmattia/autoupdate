@@ -15,6 +15,8 @@ export REVIEW_USER="nmattia"
 update_package() {
     dir=$(mktemp -d)
 
+    echo "updating $1"
+
     cd $dir
 
     git clone "https://github.com/nmattia/$1"
@@ -34,20 +36,18 @@ update_package() {
 
         git commit --author="$AUTOUPDATE_NAME <$AUTOUPDATE_EMAIL>" -am "Update dependencies"
 
-        hub fork 2>&1 >/dev/null
+        hub fork >/dev/null 2>&1
 
         git remote set-url \
             "$AUTOUPDATE_USER" \
             "https://${GITHUB_TOKEN}@github.com/$AUTOUPDATE_USER/$1.git" \
-            2>&1 >/dev/null
+            >/dev/null 2>&1
 
-
-        git push -fu "$AUTOUPDATE_USER" "$branch_name" 2>&1 >/dev/null
+        git push -fu "$AUTOUPDATE_USER" "$branch_name" >/dev/null 2>&1
 
         hub pull-request \
             -m "Update dependencies" \
-            -r "$REVIEW_USER" \
-            2>&1 >/dev/null
+            >/dev/null 2>&1
     else
         echo "No updated for $1"
     fi
