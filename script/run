@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
-# vim: filetype=sh
+# vim: ft=sh
 
 set -euo pipefail
 
 mkdir -p ~/.tmp
 
 export TMPDIR=~/.tmp
+
+export AUTOUPDATE_USER="nmattia-autoupdate"
+export AUTOUPDATE_EMAIL="nicolas@nmattia.com"
+export AUTOUPDATE_NAME="Nicolas Mattia"
+export REVIEW_USER="nmattia"
 
 update_package() {
     dir=$(mktemp -d)
@@ -16,21 +21,33 @@ update_package() {
 
     cd $1
 
-    git checkout -b autoupdate
-
     ./script/update 2>&1 > /dev/null || return 1
 
     if [[ `git status --porcelain` ]]; then
-        git config user.email "nicolas@nmattia.com"
-        git config user.name "Nicolas Mattia"
 
-        git commit --author="Nicolas Mattia <nicolas@nmattia.com>" -am "Update dependencies"
+        date_tag=$(date --iso-8601)
+        branch_name="autoupdate-$date_tag"
+        git checkout -b "$branch_name"
 
-        git remote set-url origin "https://${GITHUB_TOKEN}@github.com/nmattia/$1.git" 2>&1 >/dev/null
+        git config user.email "$AUTOUPDATE_EMAIL"
+        git config user.name "$AUTOUPDATE_NAME"
 
-        git push -fu origin autoupdate 2>&1 >/dev/null
+        git commit --author="$AUTOUPDATE_NAME <$AUTOUPDATE_EMAIL>" -am "Update dependencies"
 
-        hub pull-request -m "Update dependencies" -r nmattia 2>&1 >/dev/null
+        hub fork 2>&1 >/dev/null
+
+        git remote set-url \
+            "$AUTOUPDATE_USER" \
+            "https://${GITHUB_TOKEN}@github.com/$AUTOUPDATE_USER/$1.git" \
+            2>&1 >/dev/null
+
+
+        git push -fu "$AUTOUPDATE_USER" "$branch_name" 2>&1 >/dev/null
+
+        hub pull-request \
+            -m "Update dependencies" \
+            -r "$REVIEW_USER" \
+            2>&1 >/dev/null
     else
         echo "No updated for $1"
     fi
