@@ -23,7 +23,11 @@ update_package() {
 
     cd $1
 
-    ./script/update 2>&1 > /dev/null || return 1
+
+    # The poor man's retry
+    ./script/update 2>&1 > /dev/null || \
+        ./script/update 2>&1 > /dev/null || \
+        return 1
 
     if [[ `git status --porcelain` ]]; then
 
