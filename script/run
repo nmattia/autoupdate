@@ -57,13 +57,16 @@ update_package() {
     fi
 }
 
-did_fail=0
+did_fail=""
 
-update_package stutter || did_fail=1
-update_package makefile || did_fail=1
-update_package snack || did_fail=1
-update_package snipcheck || did_fail=1
-update_package nmattia.com || did_fail=1
-update_package resume || did_fail=1
+update_package stutter || did_fail="stutter $did_fail"
+update_package makefile || did_fail="makefile $did_fail"
+update_package snack || did_fail="snack $did_fail"
+update_package snipcheck || did_fail="snipcheck $did_fail"
+update_package nmattia.com || did_fail="nmattia.com $did_fail"
+update_package resume || did_fail="resume $did_fail"
 
-exit $did_fail
+if [ -n "$did_fail" ]; then
+    echo "Failed: $did_fail"
+    exit 1
+fi
